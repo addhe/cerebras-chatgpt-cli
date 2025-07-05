@@ -10,7 +10,7 @@ I have successfully implemented a modern, modular Cerebras CLI with a comprehens
 - **PRD.md**: Comprehensive Product Requirements Document outlining features, architecture, and roadmap
 - **CODING_GUIDELINES.md**: Python coding standards and project structure guidelines
 - **docs/tools.md**: Complete tools system documentation with examples
-- **README_NEW.md**: Updated documentation with modern features and usage
+- **README.md**: Updated documentation with modern features and usage
 
 ### 🏗️ Architecture & Core Infrastructure
 - **Modular Package Structure**: Clean separation of concerns with `cerebras_cli/` package
@@ -159,6 +159,6 @@ The tools system, in particular, opens up endless possibilities for automation a
 
 ---
 
-*For detailed usage instructions, see the README_NEW.md and docs/tools.md files.*
+*For detailed usage instructions, see the README.md and docs/tools.md files.*
 *For development guidelines, see CODING_GUIDELINES.md.*
 *For validation, run the validate_implementation.py script.*

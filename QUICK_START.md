@@ -69,7 +69,7 @@ python -m cerebras_cli config set cli.char_delay 0.02
 
 ## 📚 Documentation
 
-- **Complete Guide**: `README_NEW.md`
+- **Complete Guide**: `README.md`
 - **Tools Documentation**: `docs/tools.md` 
 - **Setup Guide**: Run `python -m cerebras_cli setup`
 - **Troubleshooting**: `python -m cerebras_cli doctor`
