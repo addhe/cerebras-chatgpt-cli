@@ -21,7 +21,7 @@ class APIConfig:
 @dataclass
 class CLIConfig:
     """CLI behavior configuration."""
-    char_delay: float = 0.02
+    char_delay: float = 0.0  # No delay by default (was 0.02)
     max_history: int = 100
     auto_save: bool = True
     theme: str = "default"

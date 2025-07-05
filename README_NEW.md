@@ -156,7 +156,19 @@ See [Tools Documentation](docs/tools.md) for complete details.
 |----------|-------------|---------|
 | `CEREBRAS_API_KEY` | Your Cerebras API key | *Required* |
 | `CEREBRAS_MODEL` | Model to use | `llama-4-scout-17b-16e-instruct` |
-| `CEREBRAS_CHAR_DELAY` | Typewriter delay (seconds) | `0.02` |
+| `CEREBRAS_CHAR_DELAY` | Typewriter delay (seconds) | `0.0` (no delay) |
+
+**Note:** To enable typewriter effect (character-by-character output), set `CEREBRAS_CHAR_DELAY` to a small value like `0.02`:
+
+```bash
+export CEREBRAS_CHAR_DELAY=0.02
+```
+
+Or configure it in your config file:
+```yaml
+cli:
+  char_delay: 0.02  # Enable typewriter effect
+```
 
 ### Configuration Files
 
@@ -168,7 +180,7 @@ api:
   max_retries: 3
 
 cli:
-  char_delay: 0.02
+  char_delay: 0.0  # Set to 0.02 for typewriter effect
   max_history: 100
   theme: "default"
 
@@ -251,16 +263,61 @@ pip install -r requirements.txt
 python -m cerebras_cli.cli.main doctor
 ```
 
+**Output Shows Character-by-Character (Typewriter Effect)**
+If you see output like this:
+```
+H
+e
+l
+l
+o
+ 
+W
+o
+r
+l
+d
+```
+
+This is caused by the character delay setting. To disable it:
+```bash
+# Disable character delay
+export CEREBRAS_CHAR_DELAY=0
+
+# Or check your current config
+python -m cerebras_cli config show
+```
+
+**Slow Response Time**
+```bash
+# Increase timeout
+export CEREBRAS_TIMEOUT=60
+
+# Or configure in config file
+cerebras-cli config set api.timeout 60
+```
+
 ## 🚦 Roadmap
 
+### ✅ Version 1.0 (Current)
+- [x] ✅ Modern CLI architecture with Click
+- [x] ✅ Comprehensive tools system (7 tools across 3 categories)
+- [x] ✅ Rich terminal interface with syntax highlighting
+- [x] ✅ Configuration management (YAML + env variables)
+- [x] ✅ Interactive REPL with slash commands
+- [x] ✅ Backward compatibility with legacy CLI
+- [x] ✅ Complete test suite and validation
+
 ### Version 1.1 (Next Release)
-- [ ] Tools system implementation
-- [ ] Plugin architecture  
-- [ ] Advanced file operations
-- [ ] Git integration
+- [ ] Plugin architecture for external tools
+- [ ] Advanced file operations (search, replace, diff)
+- [ ] Git integration tools
+- [ ] Token usage tracking and analytics
+- [ ] Tab completion in REPL
+- [ ] Conversation history persistence
 
 ### Version 1.2 (Future)
-- [ ] Multi-model support
+- [ ] Multi-model support with easy switching
 - [ ] Web interface companion
 - [ ] Team collaboration features
 
