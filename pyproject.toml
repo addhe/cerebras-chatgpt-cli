@@ -1,0 +1,164 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "cerebras-cli"
+version = "1.0.0"
+description = "AI-powered command-line interface for Cerebras models"
+readme = "README.md"
+requires-python = ">=3.9"
+license = {text = "MIT"}
+authors = [
+    {name = "Addhe Warman Putra (Awan)", email = "addhe@example.com"}
+]
+maintainers = [
+    {name = "Addhe Warman Putra (Awan)", email = "addhe@example.com"}
+]
+keywords = [
+    "ai", "cli", "chatgpt", "cerebras", "machine-learning", 
+    "natural-language-processing", "llm", "terminal", "assistant"
+]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+    "Topic :: Terminals",
+]
+dependencies = [
+    "cerebras-cloud-sdk",
+    "click>=8.0.0",
+    "rich>=13.0.0",
+    "aiohttp>=3.8.0",
+    "pyyaml>=6.0",
+    "pydantic>=2.0.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.0.0",
+    "black>=22.0.0",
+    "flake8>=5.0.0",
+    "mypy>=1.0.0",
+    "pre-commit>=2.20.0",
+]
+enhanced = [
+    "keyring>=24.0.0",
+    "gitpython>=3.1.0",
+    "pygments>=2.13.0",
+    "prompt-toolkit>=3.0.0",
+]
+
+[project.urls]
+Homepage = "https://github.com/addheputra/cerebras-chatgpt-cli"
+Documentation = "https://github.com/addheputra/cerebras-chatgpt-cli/blob/main/README.md"
+Repository = "https://github.com/addheputra/cerebras-chatgpt-cli"
+"Bug Tracker" = "https://github.com/addheputra/cerebras-chatgpt-cli/issues"
+
+[project.scripts]
+cerebras-cli = "cerebras_cli.cli.main:main"
+cerebras-legacy = "src.main:main"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["cerebras_cli*", "src*"]
+exclude = ["tests*"]
+
+[tool.setuptools.package-data]
+cerebras_cli = ["*.yaml", "*.yml"]
+
+# Black configuration
+[tool.black]
+line-length = 88
+target-version = ['py39']
+include = '\.pyi?$'
+extend-exclude = '''
+/(
+  \.eggs
+  | \.git
+  | \.mypy_cache
+  | \.pytest_cache
+  | \.venv
+  | build
+  | dist
+)/
+'''
+
+# isort configuration
+[tool.isort]
+profile = "black"
+line_length = 88
+multi_line_output = 3
+include_trailing_comma = true
+force_grid_wrap = 0
+use_parentheses = true
+ensure_newline_before_comments = true
+
+# MyPy configuration
+[tool.mypy]
+python_version = "3.9"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = true
+disallow_incomplete_defs = true
+check_untyped_defs = true
+disallow_untyped_decorators = true
+no_implicit_optional = true
+warn_redundant_casts = true
+warn_unused_ignores = true
+warn_no_return = true
+warn_unreachable = true
+strict_equality = true
+
+[[tool.mypy.overrides]]
+module = [
+    "cerebras.*",
+    "rich.*",
+    "click.*",
+    "aiohttp.*",
+    "yaml.*",
+    "pydantic.*",
+]
+ignore_missing_imports = true
+
+# Pytest configuration
+[tool.pytest.ini_options]
+minversion = "7.0"
+addopts = "-ra -q --strict-markers"
+testpaths = ["tests"]
+markers = [
+    "slow: marks tests as slow (deselect with '-m \"not slow\"')",
+    "integration: marks tests as integration tests",
+    "unit: marks tests as unit tests",
+]
+
+# Coverage configuration
+[tool.coverage.run]
+source = ["cerebras_cli", "src"]
+omit = [
+    "tests/*",
+    "setup.py",
+    "*/__init__.py",
+]
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "def __repr__",
+    "if self.debug:",
+    "if settings.DEBUG",
+    "raise AssertionError",
+    "raise NotImplementedError",
+    "if 0:",
+    "if __name__ == .__main__.:",
+    "class .*\\bProtocol\\):",
+    "@(abc\\.)?abstractmethod",
+]
