@@ -92,17 +92,27 @@ Cerebras CLI adalah command-line interface tool yang memungkinkan interaksi deng
 - **Priority**: P0 (Must Have)
 
 ### 5. Tools System
+- **🤖 Automatic Tool Detection**:
+  - **Smart Pattern Recognition**: AI detects tool needs from natural language
+  - **Multi-Language Support**: Indonesian and English query processing
+  - **Parameter Extraction**: Auto-parses paths, patterns, and flags
+  - **Context Integration**: Tool results integrated into AI responses
+  - **Visual Feedback**: Clear indicators for tool execution status
 - **Built-in Tools**:
-  - **File System Tools**: `read_file`, `write_file`, `list_directory`
-  - **Shell Tool**: `run_command` 
-  - **Code Tools**: `format_code`, `analyze_code`, `generate_tests`
-  - **Documentation Tools**: `generate_docs`, `explain_code`
+  - **File System Tools**: `file_read`, `file_write`, `file_list`
+  - **Shell Tools**: `shell_exec`, `directory`
+  - **Code Tools**: `code_analyze`, `python_exec`
 - **Tool Framework**:
   - Plugin architecture untuk custom tools
   - Tool confirmation untuk destructive operations
   - Async execution support
   - Error handling dan recovery
-- **Priority**: P1 (Should Have)
+  - Automatic tool orchestration
+- **Natural Language Examples**:
+  - "ada berapa file .py di folder ini?" → auto `file_list` with `*.py` pattern
+  - "list files in current directory" → auto `file_list`
+  - "berapa file di folder /tmp?" → auto `file_list` with `/tmp` path
+- **Priority**: P0 (Must Have) ✅ **IMPLEMENTED**
 
 ### 6. Context Management
 - **Smart Context**:
@@ -146,11 +156,50 @@ Cerebras CLI adalah command-line interface tool yang memungkinkan interaksi deng
    - Built-in tools implementation
    - Plugin loader dan manager
    - Tool execution framework
+   - **🤖 Automatic Detection Engine**
 
 4. **Utils & Helpers** (`cerebras_cli/utils/`)
    - File operations
    - Text processing
    - Formatting utilities
+
+### 🤖 Automatic Tool Detection System
+
+#### Pattern Recognition Engine
+- **Regex-based Matching**: Detects intent from natural language queries
+- **Multi-Language Processing**: Supports Indonesian and English patterns
+- **Context-Aware Parsing**: Understands project structure and user context
+
+#### Supported Detection Patterns
+```python
+# File operation patterns
+- r'berapa.*file.*\.py'     → file_list with *.py pattern
+- r'list.*file'             → file_list tool
+- r'ada berapa.*file'       → file_list tool
+- r'count.*file'            → file_list tool
+- r'show.*file'             → file_list tool
+
+# Path extraction patterns  
+- r'/[\w/]+'                → automatic path parameter
+- r'\.py|\.js|\.txt'        → automatic pattern parameter
+- r'subfolder|recursive'    → automatic recursive flag
+```
+
+#### Parameter Extraction Logic
+1. **Path Detection**: Automatically extracts paths like `/tmp`, `./src`
+2. **Pattern Matching**: Detects file extensions and sets appropriate filters
+3. **Flag Recognition**: Identifies recursive, hidden file options
+4. **Smart Defaults**: Applies sensible defaults when parameters are missing
+
+#### Integration Flow
+```
+User Input → Pattern Matching → Parameter Extraction → Tool Execution → Result Integration → AI Response
+```
+
+#### Visual Feedback System
+- `🔧 Auto-detecting: Using [tool_name] tool...` - Shows detection in progress
+- `✓ Tool result: [summary]` - Shows successful execution
+- `⚠ Tool failed: [error]` - Shows failure with graceful degradation
 
 ### Technology Stack
 
@@ -314,19 +363,44 @@ cerebras-cli config get api-key
    - Risk: Similar tools dengan better features
    - Mitigation: Focus pada unique value propositions
 
+## Implementation Status ✅
+
+### ✅ Version 1.0 (COMPLETED - July 2025)
+- [x] ✅ Interactive REPL Mode with Rich terminal UI
+- [x] ✅ Configuration Management (YAML + environment variables)
+- [x] ✅ File Operations with @filename syntax
+- [x] ✅ Command System with comprehensive slash commands
+- [x] ✅ Tools System with 7 built-in tools (file, shell, code categories)
+- [x] ✅ **🤖 Automatic Tool Detection** - Revolutionary AI-powered feature
+  - [x] ✅ Smart pattern recognition from natural language
+  - [x] ✅ Multi-language support (Indonesian + English)
+  - [x] ✅ Automatic parameter extraction
+  - [x] ✅ Tool result integration into AI responses
+  - [x] ✅ Visual feedback and status indicators
+- [x] ✅ Authentication & Security with API key management
+- [x] ✅ Error Handling with graceful recovery
+- [x] ✅ Async Architecture for high performance
+- [x] ✅ Backward compatibility with legacy CLI
+- [x] ✅ Complete test suite and validation
+
 ## Future Roadmap
 
-### Version 1.1 (3 months)
-- Web interface companion
-- Team collaboration features
-- Advanced code analysis tools
-- Integration dengan popular IDEs
+### Version 1.1 (Next Release - 2-3 months)
+- Advanced shell command detection and execution
+- Python code execution from natural language
+- Plugin architecture for external tools
+- Advanced file operations (search, replace, diff)
+- Git integration tools
+- Token usage tracking and analytics
+- Tab completion in REPL
+- Conversation history persistence
 
 ### Version 1.2 (6 months)
 - Multi-model support (OpenAI, Claude, etc.)
-- Visual interface untuk complex queries
-- Automated workflow creation
-- Enterprise features
+- Web interface companion
+- Team collaboration features
+- Advanced code analysis and generation
+- Integration dengan popular IDEs
 
 ### Version 2.0 (12 months)
 - Local model support

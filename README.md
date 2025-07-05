@@ -17,7 +17,10 @@ A powerful, modern command-line interface for interacting with Cerebras AI model
 - **Async Architecture**: High-performance async operations throughout
 
 ### 🛠️ Advanced Features
-- **Tools System**: Extensible framework for custom tools
+- **🤖 Automatic Tool Detection**: AI automatically detects when tools are needed and executes them
+- **Tools System**: Extensible framework with 7 built-in tools across 3 categories
+- **Smart Parameter Extraction**: Auto-parses paths, patterns, and flags from natural language
+- **Multi-Language Support**: Works with both Indonesian and English queries
 - **Context Management**: Smart file discovery and project understanding
 - **Conversation Persistence**: Save and restore chat sessions
 - **Multiple Models**: Support for various Cerebras model variants
@@ -145,6 +148,42 @@ The CLI includes a comprehensive tools system for various operations:
 # Execute Python code safely
 /tool python_exec code="print('Hello, World!')"
 ```
+
+### 🤖 Automatic Tool Detection
+
+**Revolutionary Feature**: The AI automatically detects when tools are needed and executes them!
+
+**Natural Language Examples:**
+```bash
+# File Operations (AUTO-DETECTED)
+> ada berapa file .py di folder ini?
+🔧 Auto-detecting: Using file_list tool...
+✓ Tool result: Found 26 Python files
+
+> list files in current directory
+🔧 Auto-detecting: Using file_list tool...  
+✓ Tool result: Found 18 items
+
+> ada berapa file di folder /tmp ?
+🔧 Auto-detecting: Using file_list tool...
+✓ Tool result: Found 12 items
+
+# Supported Patterns:
+- "berapa file .py" → auto file_list with *.py pattern
+- "list files" → auto file_list
+- "show files recursively" → auto file_list recursive
+- "cari file" → auto file_list with search
+- "count files" → auto file_list with counting
+```
+
+**Multi-Language Support:**
+- 🇮🇩 **Indonesian**: "ada berapa file", "cari file", "tampilkan file"
+- 🇺🇸 **English**: "how many files", "list files", "show files"
+
+**Smart Parameter Extraction:**
+- **Paths**: `/tmp`, `./src` → automatically sets path parameter
+- **Patterns**: `.py`, `.js`, `.txt` → automatically sets pattern filter
+- **Flags**: "recursive", "subfolder" → automatically enables recursive mode
 
 See [Tools Documentation](docs/tools.md) for complete details.
 
@@ -307,15 +346,19 @@ cerebras-cli config set api.timeout 60
 - [x] ✅ Interactive REPL with slash commands
 - [x] ✅ Backward compatibility with legacy CLI
 - [x] ✅ Complete test suite and validation
+- [x] ✅ **Automatic Tool Usage**: AI-driven tool detection and execution
+  - [x] ✅ Smart tool detection from user queries
+  - [x] ✅ Automatic tool orchestration and result integration
+  - [x] ✅ Context-aware tool suggestions
+  - [x] ✅ Multi-language support (Indonesian + English)
+  - [x] ✅ Smart parameter extraction from natural language
 
 ### Version 1.1 (Next Release)
-- [ ] **Automatic Tool Usage**: AI-driven tool detection and execution
-  - [ ] Smart tool detection from user queries
-  - [ ] Automatic tool orchestration and result integration
-  - [ ] Context-aware tool suggestions
 - [ ] Plugin architecture for external tools
 - [ ] Advanced file operations (search, replace, diff)
 - [ ] Git integration tools
+- [ ] Advanced shell command detection and execution
+- [ ] Python code execution from natural language
 - [ ] Token usage tracking and analytics
 - [ ] Tab completion in REPL
 - [ ] Conversation history persistence
