@@ -2,7 +2,7 @@
 import os
 
 # Model configuration
-MODEL_ID = os.getenv("CEREBRAS_MODEL_ID", "llama3.1-70b")
+MODEL_ID = os.getenv("CEREBRAS_MODEL_ID", "llama-4-scout-17b-16e-instruct")
 
 # System message configuration
 SYSTEM_MESSAGE = {
