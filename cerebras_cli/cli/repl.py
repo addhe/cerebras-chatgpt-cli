@@ -158,17 +158,29 @@ class REPL:
         self.history.add_message("user", user_input)
         
         try:
+            # Check if automatic tool usage is needed
+            tool_result = await self.detect_and_execute_tools(user_input)
+            
             # Show typing indicator
             with self.console.status("[dim]Thinking...[/dim]"):
                 start_time = time.time()
                 
+                # Prepare messages for AI (include tool results if any)
+                messages = self.history.get_messages()
+                if tool_result:
+                    # Add tool result to context
+                    tool_context = f"\n\n[Tool Result: {tool_result['summary']}]\n{tool_result['data']}\n"
+                    # Modify the last user message to include tool results
+                    if messages and messages[-1]['role'] == 'user':
+                        messages[-1]['content'] += tool_context
+                
                 # Generate response
                 if self.config.cli.char_delay > 0:
                     # Stream response with character delay
-                    await self.stream_response_with_delay(self.history.get_messages())
+                    await self.stream_response_with_delay(messages)
                 else:
                     # Generate complete response
-                    response_data = await self.client.generate_completion(self.history.get_messages())
+                    response_data = await self.client.generate_completion(messages)
                     content = response_data['choices'][0]['message']['content']
                     
                     # Display response
@@ -537,3 +549,149 @@ or use --model flag when starting CLI
             if self.verbose:
                 import traceback
                 self.console.print(f"[dim]{traceback.format_exc()}[/dim]")
+
+    async def detect_and_execute_tools(self, user_input: str) -> Optional[Dict[str, Any]]:
+        """Detect if user input requires tools and execute them automatically."""
+        import re
+        
+        user_input_lower = user_input.lower()
+        
+        # File operation patterns
+        file_patterns = [
+            (r'berapa.*file.*\.py', 'file_list', {'pattern': '*.py', 'recursive': True}),
+            (r'list.*file.*\.py', 'file_list', {'pattern': '*.py'}),
+            (r'ada berapa.*file', 'file_list', {}),
+            (r'count.*file', 'file_list', {}),
+            (r'list.*file', 'file_list', {}),
+            (r'show.*file', 'file_list', {}),
+            (r'cari.*file', 'file_list', {'recursive': True}),
+            (r'read.*file|baca.*file', 'file_read', {}),
+        ]
+        
+        # Shell command patterns
+        shell_patterns = [
+            (r'execute|run|jalankan', 'shell_exec', {}),
+            (r'command|perintah', 'shell_exec', {}),
+        ]
+        
+        # Directory patterns
+        directory_patterns = [
+            (r'berapa.*folder|count.*director', 'file_list', {'recursive': True}),
+            (r'list.*director|show.*director', 'file_list', {}),
+        ]
+        
+        # Python execution patterns
+        python_patterns = [
+            (r'execute.*python|run.*python', 'python_exec', {}),
+            (r'calculate|hitung|kalkulasi', 'python_exec', {}),
+        ]
+        
+        all_patterns = file_patterns + shell_patterns + directory_patterns + python_patterns
+        
+        for pattern, tool_name, default_params in all_patterns:
+            if re.search(pattern, user_input_lower):
+                return await self._execute_detected_tool(user_input, tool_name, default_params)
+        
+        return None
+    
+    async def _execute_detected_tool(self, user_input: str, tool_name: str, default_params: Dict) -> Dict[str, Any]:
+        """Execute a detected tool with smart parameter extraction."""
+        try:
+            params = default_params.copy()
+            
+            # Smart parameter extraction based on tool type
+            if tool_name == 'file_list':
+                params.update(self._extract_file_list_params(user_input))
+            elif tool_name == 'shell_exec':
+                params.update(self._extract_shell_params(user_input))
+            elif tool_name == 'python_exec':
+                params.update(self._extract_python_params(user_input))
+            elif tool_name == 'file_read':
+                params.update(self._extract_file_read_params(user_input))
+            
+            # Show what tool is being executed
+            self.console.print(f"[dim]🔧 Auto-detecting: Using {tool_name} tool...[/dim]")
+            
+            # Execute the tool
+            result = await self.tools_registry.execute_tool(tool_name, **params)
+            
+            if result.success:
+                # Format the result for context
+                if tool_name == 'file_list':
+                    files = result.data
+                    if isinstance(files, list):
+                        summary = f"Found {len(files)} items"
+                        if params.get('pattern'):
+                            py_files = [f for f in files if f.get('name', '').endswith('.py')]
+                            summary = f"Found {len(py_files)} Python files"
+                            data = f"Python files: {[f.get('name') for f in py_files]}"
+                        else:
+                            data = f"Files: {[f.get('name') for f in files[:10]]}"  # Show first 10
+                    else:
+                        summary = "Listed directory contents"
+                        data = str(result.data)
+                else:
+                    summary = f"Executed {tool_name}"
+                    data = str(result.data)
+                
+                self.console.print(f"[green]✓ Tool result: {summary}[/green]")
+                
+                return {
+                    'tool': tool_name,
+                    'summary': summary,
+                    'data': data,
+                    'raw_result': result.data
+                }
+            else:
+                self.console.print(f"[yellow]⚠ Tool failed: {result.error}[/yellow]")
+                return None
+                
+        except Exception as e:
+            self.console.print(f"[red]Error executing auto-tool: {e}[/red]")
+            return None
+    
+    def _extract_file_list_params(self, user_input: str) -> Dict:
+        """Extract parameters for file_list tool."""
+        import re
+        params = {}
+        
+        # Check for file extensions
+        if re.search(r'\.py', user_input):
+            params['pattern'] = '*.py'
+        elif re.search(r'\.js', user_input):
+            params['pattern'] = '*.js'
+        elif re.search(r'\.txt', user_input):
+            params['pattern'] = '*.txt'
+        
+        # Check for recursive/subfolder mentions
+        if re.search(r'subfolder|recursive|semua.*folder', user_input.lower()):
+            params['recursive'] = True
+        
+        # Check for specific paths
+        path_match = re.search(r'/[\w/]+', user_input)
+        if path_match:
+            params['path'] = path_match.group()
+        
+        return params
+    
+    def _extract_shell_params(self, user_input: str) -> Dict:
+        """Extract parameters for shell_exec tool."""
+        # For now, let the AI handle shell commands
+        return {}
+    
+    def _extract_python_params(self, user_input: str) -> Dict:
+        """Extract parameters for python_exec tool."""
+        # For now, let the AI handle Python code
+        return {}
+    
+    def _extract_file_read_params(self, user_input: str) -> Dict:
+        """Extract parameters for file_read tool."""
+        import re
+        params = {}
+        
+        # Look for file names in the input
+        file_match = re.search(r'(\w+\.\w+)', user_input)
+        if file_match:
+            params['path'] = file_match.group()
+        
+        return params
