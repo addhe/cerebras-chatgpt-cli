@@ -343,17 +343,26 @@ class REPL:
   /models               Show available models
   /tokens               Show token usage statistics
   /tools                List available tools
+  /tools <tool_name>    Execute a tool directly (e.g., /tools file_list pattern=*.py)
   /tool <name> [args]   Execute a specific tool
 
 [yellow]File Operations:[/yellow]
   @filename             Include file content in your message
   @file.py What does this do?   Include file and ask about it
 
+[yellow]Automatic Tools:[/yellow]
+  🤖 AI automatically detects when you need tools!
+  Examples:
+    "How many .py files are here?"     → auto uses file_list tool
+    "List files in current directory"  → auto uses file_list tool
+    "Show me files recursively"        → auto uses file_list with recursive=true
+
 [yellow]Tips:[/yellow]
   - Use Ctrl+C to interrupt generation
   - Multi-line input: End with empty line
   - Markdown formatting is supported in responses
   - Files are automatically detected and syntax highlighted
+  - 🔧 Watch for "Auto-detecting" messages when tools are used automatically
         """
         
         panel = Panel(help_text.strip(), border_style="blue", title="Help")
