@@ -1,5 +1,10 @@
-# Cerebras AI Chat Application
-This is a Python-based chat application that uses the Cerebras AI model to generate responses. It allows users to interact with a large language model in a conversational manner.
+# 🧠 Cerebras CLI - AI-Powered Command-Line Interface
+
+[![Python 3.9+](https://img.shields.io/badge/python-3.9+-blue.svg)](https://www.python.org/downloads/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
+
+A powerful, modern command-line interface for interacting with Cerebras AI models. Inspired by Gemini CLI and built with Python, this tool provides an intuitive and extensible platform for AI-assisted development workflows.
 
 ## Features
 * Utilizes the Cerebras LLaMA 3.1 70B model
