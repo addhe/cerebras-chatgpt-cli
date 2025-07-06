@@ -253,6 +253,122 @@ cerebras-cli/
 └── examples/              # Usage examples
 ```
 
+## 🔌 Plugin Architecture (Coming in v1.1)
+
+### Plugin System Overview
+
+The plugin architecture will enable developers to create and distribute custom tools that integrate seamlessly with Cerebras CLI. This system is designed to be:
+
+- **🔒 Secure**: Sandboxed execution with permission controls
+- **📦 Distributable**: Install plugins via PyPI or custom registries
+- **🤖 AI-Integrated**: Automatic detection works with custom tools
+- **🔧 Standards-Based**: Follows established plugin patterns
+
+### Plugin Structure
+
+```python
+# Example plugin: cerebras-cli-docker
+from cerebras_cli.tools import Tool, ToolParameter, ToolResult
+
+class DockerTool(Tool):
+    @property
+    def name(self) -> str:
+        return "docker"
+    
+    @property 
+    def description(self) -> str:
+        return "Manage Docker containers and images"
+    
+    @property
+    def category(self) -> str:
+        return "devops"
+    
+    def _setup_parameters(self) -> None:
+        self.add_parameter(ToolParameter(
+            name="action",
+            type=str,
+            description="Docker action: ps, run, stop, build",
+            required=True
+        ))
+        self.add_parameter(ToolParameter(
+            name="image",
+            type=str, 
+            description="Docker image name",
+            required=False
+        ))
+    
+    async def execute(self, action: str, image: str = None) -> ToolResult:
+        # Implementation here
+        pass
+
+# Plugin registration
+def register_plugin():
+    return DockerTool()
+```
+
+### Plugin Installation
+
+```bash
+# Install from PyPI
+pip install cerebras-cli-docker
+
+# Install from local directory
+pip install ./my-custom-plugin
+
+# Install from Git
+pip install git+https://github.com/user/cerebras-cli-plugin.git
+```
+
+### Plugin Discovery
+
+```bash
+# List available plugins
+cerebras-cli plugins list
+
+# Search plugin marketplace  
+cerebras-cli plugins search docker
+
+# Install plugin
+cerebras-cli plugins install docker
+
+# Enable/disable plugins
+cerebras-cli plugins enable docker
+cerebras-cli plugins disable docker
+```
+
+### AI Integration
+
+Plugins automatically integrate with the AI detection system:
+
+```bash
+# Natural language will auto-detect custom tools
+> "start a nginx container"
+🔧 Auto-detecting: Using docker tool...
+✓ Tool result: Container nginx-123 started
+
+> "build my app with docker"  
+🔧 Auto-detecting: Using docker tool...
+✓ Tool result: Image my-app:latest built successfully
+```
+
+### Plugin Categories
+
+**Planned Plugin Categories:**
+- **📦 DevOps**: Docker, Kubernetes, AWS, GCP, Azure
+- **🔧 Development**: Lint tools, formatters, test runners
+- **📊 Data**: Database clients, API clients, data processors  
+- **🌐 Web**: HTTP clients, web scrapers, API testing
+- **🔐 Security**: Vulnerability scanners, secret detectors
+- **📈 Monitoring**: Log analyzers, metric collectors
+
+### Security Model
+
+- **🔒 Sandboxed Execution**: Plugins run in isolated environments
+- **✅ Permission System**: Users approve tool capabilities
+- **🛡️ Code Signing**: Verified plugins with digital signatures
+- **📋 Audit Logging**: All plugin actions are logged
+- **⚠️ Safety Checks**: Dangerous operations require confirmation
+
 ## 🧪 Development
 
 ### Development Setup
@@ -354,7 +470,11 @@ cerebras-cli config set api.timeout 60
   - [x] ✅ Smart parameter extraction from natural language
 
 ### Version 1.1 (Next Release)
-- [ ] Plugin architecture for external tools
+- [ ] **Plugin architecture for external tools**
+  - [ ] Dynamic plugin loading from external packages
+  - [ ] Plugin marketplace and discovery system
+  - [ ] Standardized plugin API and SDK
+  - [ ] Plugin validation and sandboxing
 - [ ] Advanced file operations (search, replace, diff)
 - [ ] Git integration tools
 - [ ] Advanced shell command detection and execution
@@ -381,7 +501,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ## 👨‍💻 Author
 
 **Addhe Warman Putra (Awan)**
-- GitHub: [@addheputra](https://github.com/addheputra)
+- GitHub: [@addheputra](https://github.com/addhe)
 
 ---
 
