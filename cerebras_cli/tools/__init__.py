@@ -6,6 +6,7 @@ various operations like file manipulation, shell commands, code analysis, etc.
 
 from .base import Tool, ToolRegistry, ToolError
 from .file_tools import FileReadTool, FileWriteTool, FileListTool
+from .file_edit import FileEditTool
 from .shell_tools import ShellCommandTool, DirectoryTool
 from .code_tools import CodeAnalysisTool, PythonExecuteTool
 
@@ -16,6 +17,7 @@ __all__ = [
     'FileReadTool',
     'FileWriteTool',
     'FileListTool',
+    'FileEditTool',
     'ShellCommandTool',
     'DirectoryTool',
     'CodeAnalysisTool',
@@ -29,6 +31,7 @@ default_registry = ToolRegistry()
 default_registry.register(FileReadTool())
 default_registry.register(FileWriteTool())
 default_registry.register(FileListTool())
+default_registry.register(FileEditTool())
 default_registry.register(ShellCommandTool())
 default_registry.register(DirectoryTool())
 default_registry.register(CodeAnalysisTool())

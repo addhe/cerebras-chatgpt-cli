@@ -18,7 +18,9 @@ A powerful, modern command-line interface for interacting with Cerebras AI model
 
 ### 🛠️ Advanced Features
 - **🤖 Automatic Tool Detection**: AI automatically detects when tools are needed and executes them
-- **Tools System**: Extensible framework with 7 built-in tools across 3 categories
+- **📁 File & Directory Operations**: Read, list, and edit files with natural language queries
+- **✏️ Integrated File Editing**: Edit files directly with your preferred editor (nano, vim, VS Code)
+- **Tools System**: Extensible framework with 8 built-in tools across 4 categories
 - **Smart Parameter Extraction**: Auto-parses paths, patterns, and flags from natural language
 - **Multi-Language Support**: Works with both Indonesian and English queries
 - **Context Management**: Smart file discovery and project understanding
@@ -84,6 +86,31 @@ Type /help for commands, Ctrl+C to exit
 [Conversation saved successfully]
 ```
 
+### Automatic Tool Usage (Natural Language)
+```bash
+# File reading - automatically detects and uses file_read tool
+> apa isi dari config.py?
+🔧 Auto-detecting: Using file_read tool...
+✓ Tool result: File content loaded
+[Shows file content with syntax highlighting]
+
+# Directory listing - automatically detects and uses file_list tool  
+> ada berapa file dan folder di directory ini?
+🔧 Auto-detecting: Using file_list tool...
+✓ Tool result: Found 10 items
+[Shows organized list of files and folders]
+
+# File editing - automatically detects and uses file_edit tool
+> edit README.md menggunakan nano
+🔧 Auto-detecting: Using file_edit tool...
+[Opens nano editor with README.md]
+
+# Works in English too
+> show me the content of requirements.txt
+> count files in this directory
+> modify config.py with vim
+```
+
 ### Configuration
 ```bash
 # Show current config
@@ -129,6 +156,7 @@ The CLI includes a comprehensive tools system for various operations:
 | `file_read` | File | Read file contents with syntax highlighting |
 | `file_write` | File | Write content to files with backup options |
 | `file_list` | File | List directory contents with filtering |
+| `file_edit` | File | Edit files using external editors (nano, vim, VS Code) |
 | `shell_exec` | Shell | Execute system commands safely |
 | `directory` | Shell | Directory operations (create, remove, etc.) |
 | `code_analyze` | Code | Analyze Python code structure |
@@ -138,6 +166,9 @@ The CLI includes a comprehensive tools system for various operations:
 ```bash
 # Read a Python file
 /tool file_read path=src/main.py
+
+# Edit a file with nano
+/tool file_edit path=config.py editor=nano
 
 # Execute a shell command
 /tool shell_exec command="git status"
@@ -155,7 +186,16 @@ The CLI includes a comprehensive tools system for various operations:
 
 **Natural Language Examples:**
 ```bash
-# File Operations (AUTO-DETECTED)
+# File Reading (AUTO-DETECTED)
+> apa isi dari config.py?
+🔧 Auto-detecting: Using file_read tool...
+✓ Tool result: File content loaded
+
+> show me the content of README.md
+🔧 Auto-detecting: Using file_read tool...
+✓ Tool result: File content loaded
+
+# File Listing (AUTO-DETECTED)
 > ada berapa file .py di folder ini?
 🔧 Auto-detecting: Using file_list tool...
 ✓ Tool result: Found 26 Python files
@@ -164,23 +204,30 @@ The CLI includes a comprehensive tools system for various operations:
 🔧 Auto-detecting: Using file_list tool...  
 ✓ Tool result: Found 18 items
 
-> ada berapa file di folder /tmp ?
-🔧 Auto-detecting: Using file_list tool...
-✓ Tool result: Found 12 items
+# File Editing (AUTO-DETECTED)
+> edit config.py menggunakan nano
+🔧 Auto-detecting: Using file_edit tool...
+[Opens nano editor]
+
+> modify README.md with vim
+🔧 Auto-detecting: Using file_edit tool...
+[Opens vim editor]
 
 # Supported Patterns:
+- "apa isi dari X" → auto file_read
+- "edit X" → auto file_edit  
 - "berapa file .py" → auto file_list with *.py pattern
 - "list files" → auto file_list
 - "show files recursively" → auto file_list recursive
-- "cari file" → auto file_list with search
-- "count files" → auto file_list with counting
 ```
 
 **Multi-Language Support:**
-- 🇮🇩 **Indonesian**: "ada berapa file", "cari file", "tampilkan file"
-- 🇺🇸 **English**: "how many files", "list files", "show files"
+- 🇮🇩 **Indonesian**: "apa isi dari", "edit file", "ada berapa file"
+- 🇺🇸 **English**: "show content", "edit file", "how many files"
 
 **Smart Parameter Extraction:**
+- **Files**: `config.py`, `README.md` → automatically sets file path
+- **Editors**: "nano", "vim", "code" → automatically sets editor preference
 - **Paths**: `/tmp`, `./src` → automatically sets path parameter
 - **Patterns**: `.py`, `.js`, `.txt` → automatically sets pattern filter
 - **Flags**: "recursive", "subfolder" → automatically enables recursive mode
@@ -456,12 +503,17 @@ cerebras-cli config set api.timeout 60
 
 ### ✅ Version 1.0 (Current)
 - [x] ✅ Modern CLI architecture with Click
-- [x] ✅ Comprehensive tools system (7 tools across 3 categories)
+- [x] ✅ Comprehensive tools system (8 tools across 4 categories)
 - [x] ✅ Rich terminal interface with syntax highlighting
 - [x] ✅ Configuration management (YAML + env variables)
 - [x] ✅ Interactive REPL with slash commands
 - [x] ✅ Backward compatibility with legacy CLI
 - [x] ✅ Complete test suite and validation
+- [x] ✅ **File Operations**: Read, list, and edit files seamlessly
+  - [x] ✅ File reading with auto-detection from natural language
+  - [x] ✅ Directory listing with smart parameter extraction
+  - [x] ✅ File editing with external editor integration
+  - [x] ✅ Backup support and file modification tracking
 - [x] ✅ **Automatic Tool Usage**: AI-driven tool detection and execution
   - [x] ✅ Smart tool detection from user queries
   - [x] ✅ Automatic tool orchestration and result integration

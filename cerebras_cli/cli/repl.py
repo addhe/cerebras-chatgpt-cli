@@ -556,16 +556,61 @@ or use --model flag when starting CLI
         
         user_input_lower = user_input.lower()
         
-        # File operation patterns
+        # File operation patterns - Ordered by specificity (most specific first)
         file_patterns = [
+            # File editing patterns (highest priority for edit operations)
+            (r'edit.*\.[\w]+', 'file_edit', {}),
+            (r'ubah.*\.[\w]+', 'file_edit', {}),
+            (r'modify.*\.[\w]+', 'file_edit', {}),
+            (r'update.*\.[\w]+', 'file_edit', {}),
+            (r'ganti.*isi.*\.[\w]+', 'file_edit', {}),
+            (r'change.*content.*\.[\w]+', 'file_edit', {}),
+            (r'edit.*isi.*\.[\w]+', 'file_edit', {}),
+            
+            # File reading patterns - SPECIFIC file extensions (high priority)
+            (r'apa.*isi.*dari.*\.[\w]+', 'file_read', {}),
+            (r'baca.*\.[\w]+', 'file_read', {}),
+            (r'tampilkan.*isi.*\.[\w]+', 'file_read', {}),
+            (r'lihat.*isi.*\.[\w]+', 'file_read', {}),
+            (r'show.*content.*\.[\w]+', 'file_read', {}),
+            (r'read.*\.[\w]+', 'file_read', {}),
+            (r'open.*\.[\w]+', 'file_read', {}),
+            (r'list.*isi.*dari.*\.[\w]+', 'file_read', {}),  # "list isi dari X.Y" = read file
+            (r'dapat.*melihat.*isi.*\.[\w]+', 'file_read', {}),
+            (r'can.*see.*content.*\.[\w]+', 'file_read', {}),
+            (r'what.*in.*\.[\w]+', 'file_read', {}),
+            (r'view.*\.[\w]+', 'file_read', {}),
+            (r'cat.*\.[\w]+', 'file_read', {}),
+            
+            # Special cases for reading without explicit file extension
+            (r'apa.*kamu.*dapat.*melihat.*isi', 'file_read', {}),
+            (r'can.*you.*see.*content', 'file_read', {}),
+            (r'show.*me.*the.*content', 'file_read', {}),
+            (r'apa.*isi.*dari.*config', 'file_read', {}),  # config files
+            (r'apa.*isi.*dari.*readme', 'file_read', {}),  # readme files
+            
+            # File editing patterns
+            (r'edit.*\.[\w]+', 'file_edit', {}),
+            (r'ubah.*\.[\w]+', 'file_edit', {}),
+            (r'modify.*\.[\w]+', 'file_edit', {}),
+            (r'update.*\.[\w]+', 'file_edit', {}),
+            (r'change.*\.[\w]+', 'file_edit', {}),
+            (r'ganti.*isi.*\.[\w]+', 'file_edit', {}),
+            (r'edit file', 'file_edit', {}),
+            (r'ubah file', 'file_edit', {}),
+            
+            # File listing patterns - for counting/listing files
             (r'berapa.*file.*\.py', 'file_list', {'pattern': '*.py', 'recursive': True}),
             (r'list.*file.*\.py', 'file_list', {'pattern': '*.py'}),
             (r'ada berapa.*file', 'file_list', {}),
             (r'count.*file', 'file_list', {}),
-            (r'list.*file', 'file_list', {}),
-            (r'show.*file', 'file_list', {}),
+            (r'list.*file(?!\s*\.)', 'file_list', {}),  # "list files" but not "list file.txt"
+            (r'show.*file(?!\s*\.)', 'file_list', {}),  # "show files" but not "show file.txt"
             (r'cari.*file', 'file_list', {'recursive': True}),
-            (r'read.*file|baca.*file', 'file_read', {}),
+            
+            # Directory content patterns (lowest priority for file operations)
+            (r'list.*isi.*dari.*[^\.]+$', 'file_list', {}),  # "list isi dari folder"
+            (r'apa.*isi.*dari.*[^\.]+$', 'file_list', {}),   # "apa isi dari directory"
         ]
         
         # Shell command patterns
@@ -608,6 +653,8 @@ or use --model flag when starting CLI
                 params.update(self._extract_python_params(user_input))
             elif tool_name == 'file_read':
                 params.update(self._extract_file_read_params(user_input))
+            elif tool_name == 'file_edit':
+                params.update(self._extract_file_edit_params(user_input))
             
             # Show what tool is being executed
             self.console.print(f"[dim]🔧 Auto-detecting: Using {tool_name} tool...[/dim]")
@@ -662,15 +709,52 @@ or use --model flag when starting CLI
             params['pattern'] = '*.js'
         elif re.search(r'\.txt', user_input):
             params['pattern'] = '*.txt'
+        elif re.search(r'\.md', user_input):
+            params['pattern'] = '*.md'
         
         # Check for recursive/subfolder mentions
         if re.search(r'subfolder|recursive|semua.*folder', user_input.lower()):
             params['recursive'] = True
         
-        # Check for specific paths
-        path_match = re.search(r'/[\w/]+', user_input)
-        if path_match:
-            params['path'] = path_match.group()
+        # Check for "current directory" references - don't set path for these
+        current_dir_patterns = [
+            r'directory ini',
+            r'direktori ini', 
+            r'folder ini',
+            r'here',
+            r'current directory',
+            r'current folder',
+            r'this directory',
+            r'this folder'
+        ]
+        
+        is_current_dir = any(re.search(pattern, user_input.lower()) for pattern in current_dir_patterns)
+        if is_current_dir:
+            # Don't set path - use current directory (default)
+            return params
+        
+        # Check for specific paths including directory names
+        path_patterns = [
+            r'/[\w/]+',                    # Absolute paths like /tmp
+            r'\.\/[\w/]+',                 # Relative paths like ./src  
+            r'dari ([A-Za-z0-9_-]+)(?!\.[A-Za-z]+)',  # "dari folder_name" (not files)
+            r'directory ([A-Za-z0-9_-]+)', # "directory folder_name"
+            r'folder ([A-Za-z0-9_-]+)',    # "folder folder_name"
+        ]
+        
+        for pattern in path_patterns:
+            path_match = re.search(pattern, user_input)
+            if path_match:
+                if pattern.startswith(r'dari') or pattern.startswith(r'directory') or pattern.startswith(r'folder'):
+                    # Extract just the folder name from "dari X" patterns
+                    folder_name = path_match.group(1)
+                    # Skip common words that indicate current directory
+                    if folder_name.lower() not in ['ini', 'this', 'here', 'current']:
+                        params['path'] = folder_name
+                else:
+                    # Extract full path for other patterns
+                    params['path'] = path_match.group()
+                break
         
         return params
     
@@ -689,9 +773,117 @@ or use --model flag when starting CLI
         import re
         params = {}
         
-        # Look for file names in the input
-        file_match = re.search(r'(\w+\.\w+)', user_input)
-        if file_match:
-            params['path'] = file_match.group()
+        # Look for file names with extensions (more comprehensive patterns)
+        file_patterns = [
+            r'([A-Za-z_][A-Za-z0-9_.-]*\.[A-Za-z0-9]+)',  # Standard filenames
+            r'([A-Z_][A-Z0-9_]*\.md)',                     # ALL_CAPS.md files  
+            r'(config\.[A-Za-z]+)',                        # config.* files
+            r'([Rr]eadme\.[A-Za-z]+)',                     # README files
+        ]
+        
+        for pattern in file_patterns:
+            file_match = re.search(pattern, user_input)
+            if file_match:
+                params['path'] = file_match.group(1)
+                break
+        
+        # If no file found, try extracting from common phrases
+        if 'path' not in params:
+            # Extract from "isi dari X" or "content of X"
+            content_patterns = [
+                r'isi dari ([A-Za-z0-9_.-]+)',
+                r'content of ([A-Za-z0-9_.-]+)',
+                r'melihat isi ([A-Za-z0-9_.-]+)',
+                r'melihat isi dari ([A-Za-z0-9_.-]+)',
+                r'baca ([A-Za-z0-9_.-]+)',
+                r'read ([A-Za-z0-9_.-]+)',
+                r'show me ([A-Za-z0-9_.-]+)',
+                r'view ([A-Za-z0-9_.-]+)',
+                r'see ([A-Za-z0-9_.-]+)',
+            ]
+            
+            for pattern in content_patterns:
+                match = re.search(pattern, user_input)
+                if match:
+                    filename = match.group(1)
+                    # Add common extension if missing
+                    if '.' not in filename:
+                        # Try common extensions based on context or filename
+                        if any(word in user_input.lower() for word in ['code', 'script', 'program']):
+                            filename += '.py'
+                        elif any(word in user_input.lower() for word in ['doc', 'guide', 'readme']):
+                            filename += '.md'
+                        elif 'config' in filename.lower():
+                            filename += '.py'
+                        elif 'readme' in filename.lower():
+                            filename += '.md'
+                        elif filename.lower() in ['license', 'changelog', 'authors']:
+                            # Keep without extension for common files
+                            pass
+                        else:
+                            # Default to .py for unknown files
+                            filename += '.py'
+                    params['path'] = filename
+                    break
+        
+        return params
+    
+    def _extract_file_edit_params(self, user_input: str) -> Dict:
+        """Extract parameters for file_edit tool."""
+        import re
+        params = {}
+        
+        # Use similar logic to file_read for extracting file paths
+        # Look for file names with extensions
+        file_patterns = [
+            r'([A-Za-z_][A-Za-z0-9_.-]*\.[A-Za-z0-9]+)',  # Standard filenames
+            r'([A-Z_][A-Z0-9_]*\.md)',                     # ALL_CAPS.md files  
+            r'(config\.[A-Za-z]+)',                        # config.* files
+            r'([Rr]eadme\.[A-Za-z]+)',                     # README files
+        ]
+        
+        for pattern in file_patterns:
+            file_match = re.search(pattern, user_input)
+            if file_match:
+                params['path'] = file_match.group(1)
+                break
+        
+        # If no file found, try extracting from common phrases
+        if 'path' not in params:
+            content_patterns = [
+                r'edit ([A-Za-z0-9_.-]+)',
+                r'ubah ([A-Za-z0-9_.-]+)',
+                r'modify ([A-Za-z0-9_.-]+)',
+                r'update ([A-Za-z0-9_.-]+)',
+                r'ganti isi ([A-Za-z0-9_.-]+)',
+                r'change ([A-Za-z0-9_.-]+)',
+            ]
+            
+            for pattern in content_patterns:
+                match = re.search(pattern, user_input)
+                if match:
+                    filename = match.group(1)
+                    # Add common extension if missing
+                    if '.' not in filename:
+                        if 'config' in filename.lower():
+                            filename += '.py'
+                        elif 'readme' in filename.lower():
+                            filename += '.md'
+                        else:
+                            filename += '.py'  # Default
+                    params['path'] = filename
+                    break
+        
+        # Check for editor preference
+        if 'nano' in user_input.lower():
+            params['editor'] = 'nano'
+        elif 'vim' in user_input.lower() or 'vi' in user_input.lower():
+            params['editor'] = 'vim'
+        elif 'code' in user_input.lower() or 'vscode' in user_input.lower():
+            params['editor'] = 'code'
+        
+        # Check if backup is explicitly disabled
+        if any(phrase in user_input.lower() for phrase in ['no backup', 'tanpa backup', 'no save']):
+            params['backup'] = False
         
         return params
