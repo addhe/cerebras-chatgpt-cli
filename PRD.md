@@ -99,7 +99,7 @@ Cerebras CLI adalah command-line interface tool yang memungkinkan interaksi deng
   - **Context Integration**: Tool results integrated into AI responses
   - **Visual Feedback**: Clear indicators for tool execution status
 - **Built-in Tools**:
-  - **File System Tools**: `file_read`, `file_write`, `file_list`
+  - **File System Tools**: `file_read`, `file_write`, `file_list`, `file_edit`
   - **Shell Tools**: `shell_exec`, `directory`
   - **Code Tools**: `code_analyze`, `python_exec`
 - **Tool Framework**:
@@ -112,6 +112,9 @@ Cerebras CLI adalah command-line interface tool yang memungkinkan interaksi deng
   - "ada berapa file .py di folder ini?" → auto `file_list` with `*.py` pattern
   - "list files in current directory" → auto `file_list`
   - "berapa file di folder /tmp?" → auto `file_list` with `/tmp` path
+  - "apa isi dari config.py?" → auto `file_read` with file content display
+  - "edit config.py menggunakan nano" → auto `file_edit` with nano editor
+  - "ubah README.md dengan vim" → auto `file_edit` with vim editor
 - **Priority**: P0 (Must Have) ✅ **IMPLEMENTED**
 
 ### 6. Context Management
@@ -179,17 +182,31 @@ Cerebras CLI adalah command-line interface tool yang memungkinkan interaksi deng
 - r'count.*file'            → file_list tool
 - r'show.*file'             → file_list tool
 
+# File reading patterns
+- r'apa.*isi.*dari.*\.[\w]+' → file_read tool
+- r'baca.*\.[\w]+'          → file_read tool
+- r'show.*content.*\.[\w]+' → file_read tool
+
+# File editing patterns
+- r'edit.*\.[\w]+'          → file_edit tool
+- r'ubah.*\.[\w]+'          → file_edit tool  
+- r'modify.*\.[\w]+'        → file_edit tool
+- r'ganti.*isi.*\.[\w]+'    → file_edit tool
+
 # Path extraction patterns  
 - r'/[\w/]+'                → automatic path parameter
 - r'\.py|\.js|\.txt'        → automatic pattern parameter
 - r'subfolder|recursive'    → automatic recursive flag
+- r'nano|vim|code'          → automatic editor preference
 ```
 
 #### Parameter Extraction Logic
 1. **Path Detection**: Automatically extracts paths like `/tmp`, `./src`
 2. **Pattern Matching**: Detects file extensions and sets appropriate filters
 3. **Flag Recognition**: Identifies recursive, hidden file options
-4. **Smart Defaults**: Applies sensible defaults when parameters are missing
+4. **Editor Preference**: Detects editor choice (nano, vim, code, subl)
+5. **File Detection**: Extracts specific filenames from natural language
+6. **Smart Defaults**: Applies sensible defaults when parameters are missing
 
 #### Integration Flow
 ```
@@ -370,7 +387,10 @@ cerebras-cli config get api-key
 - [x] ✅ Configuration Management (YAML + environment variables)
 - [x] ✅ File Operations with @filename syntax
 - [x] ✅ Command System with comprehensive slash commands
-- [x] ✅ Tools System with 7 built-in tools (file, shell, code categories)
+- [x] ✅ Tools System with 8 built-in tools (file, shell, code categories)
+  - [x] ✅ File Operations: read, write, list, **edit** with external editors
+  - [x] ✅ Shell Operations: command execution, directory management  
+  - [x] ✅ Code Operations: analysis, Python execution
 - [x] ✅ **🤖 Automatic Tool Detection** - Revolutionary AI-powered feature
   - [x] ✅ Smart pattern recognition from natural language
   - [x] ✅ Multi-language support (Indonesian + English)
