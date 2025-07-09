@@ -113,8 +113,13 @@ Cerebras CLI adalah command-line interface tool yang memungkinkan interaksi deng
   - "list files in current directory" → auto `file_list`
   - "berapa file di folder /tmp?" → auto `file_list` with `/tmp` path
   - "apa isi dari config.py?" → auto `file_read` with file content display
+  - "apa isi dari file testing_file.txt di folder /tmp ?" → auto `file_read` with absolute path
+  - "baca file /tmp/testing_file.txt" → auto `file_read` with full path extraction
   - "edit config.py menggunakan nano" → auto `file_edit` with nano editor
   - "ubah README.md dengan vim" → auto `file_edit` with vim editor
+  - "buat file test_new.py dengan isi 'print(\"Hello World\")'" → auto `file_write` with content
+  - "create file hello.txt with content hello world" → auto `file_write` with English
+  - "create file test_absolute.txt in folder /tmp with content test123" → auto `file_write` with absolute path
 - **Priority**: P0 (Must Have) ✅ **IMPLEMENTED**
 
 ### 6. Context Management
@@ -182,10 +187,19 @@ Cerebras CLI adalah command-line interface tool yang memungkinkan interaksi deng
 - r'count.*file'            → file_list tool
 - r'show.*file'             → file_list tool
 
-# File reading patterns
+# File reading patterns (with absolute path support)
 - r'apa.*isi.*dari.*\.[\w]+' → file_read tool
 - r'baca.*\.[\w]+'          → file_read tool
 - r'show.*content.*\.[\w]+' → file_read tool
+- r'([A-Za-z0-9_.-]+\.[A-Za-z0-9]+)\s+(?:di|in|from)\s+(?:folder\s+)?([~/]?[A-Za-z0-9_./\\-]+)'
+                            → extracts "file.txt di folder /path"
+
+# File writing patterns (NEW - July 2025)
+- r'buat.*file.*\.[\w]+'    → file_write tool
+- r'create.*file.*\.[\w]+'  → file_write tool
+- r'write.*to.*\.[\w]+'     → file_write tool
+- r'tulis.*ke.*\.[\w]+'     → file_write tool
+- r'simpan.*ke.*\.[\w]+'    → file_write tool
 
 # File editing patterns
 - r'edit.*\.[\w]+'          → file_edit tool
@@ -193,20 +207,24 @@ Cerebras CLI adalah command-line interface tool yang memungkinkan interaksi deng
 - r'modify.*\.[\w]+'        → file_edit tool
 - r'ganti.*isi.*\.[\w]+'    → file_edit tool
 
-# Path extraction patterns  
+# Path extraction patterns (ENHANCED)
 - r'/[\w/]+'                → automatic path parameter
 - r'\.py|\.js|\.txt'        → automatic pattern parameter
 - r'subfolder|recursive'    → automatic recursive flag
 - r'nano|vim|code'          → automatic editor preference
+- r'([~/]?[A-Za-z0-9_./\\-]+/[A-Za-z0-9_.-]+\.[A-Za-z0-9]+)'
+                            → full absolute/relative paths
 ```
 
-#### Parameter Extraction Logic
-1. **Path Detection**: Automatically extracts paths like `/tmp`, `./src`
+#### Parameter Extraction Logic (ENHANCED)
+1. **Path Detection**: Automatically extracts paths like `/tmp`, `./src`, **absolute paths**
 2. **Pattern Matching**: Detects file extensions and sets appropriate filters
 3. **Flag Recognition**: Identifies recursive, hidden file options
 4. **Editor Preference**: Detects editor choice (nano, vim, code, subl)
 5. **File Detection**: Extracts specific filenames from natural language
-6. **Smart Defaults**: Applies sensible defaults when parameters are missing
+6. **Content Extraction**: NEW - Extracts content for file writing operations
+7. **Folder Context**: NEW - Handles "file X di folder Y" patterns
+8. **Smart Defaults**: Applies sensible defaults when parameters are missing
 
 #### Integration Flow
 ```
@@ -394,7 +412,7 @@ cerebras-cli config get api-key
 - [x] ✅ **🤖 Automatic Tool Detection** - Revolutionary AI-powered feature
   - [x] ✅ Smart pattern recognition from natural language
   - [x] ✅ Multi-language support (Indonesian + English)
-  - [x] ✅ Automatic parameter extraction
+  - [x] ✅ Automatic parameter extraction with **absolute path support**
   - [x] ✅ Tool result integration into AI responses
   - [x] ✅ Visual feedback and status indicators
 - [x] ✅ Authentication & Security with API key management

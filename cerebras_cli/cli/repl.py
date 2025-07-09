@@ -558,6 +558,20 @@ or use --model flag when starting CLI
         
         # File operation patterns - Ordered by specificity (most specific first)
         file_patterns = [
+            # File writing patterns (highest priority for write operations)
+            (r'buat.*file.*\.[\w]+', 'file_write', {}),
+            (r'create.*file.*\.[\w]+', 'file_write', {}),
+            (r'write.*to.*\.[\w]+', 'file_write', {}),
+            (r'tulis.*ke.*\.[\w]+', 'file_write', {}),
+            (r'simpan.*ke.*\.[\w]+', 'file_write', {}),
+            (r'save.*to.*\.[\w]+', 'file_write', {}),
+            (r'tambahkan.*ke.*\.[\w]+', 'file_write', {}),
+            (r'add.*to.*\.[\w]+', 'file_write', {}),
+            (r'buat.*file', 'file_write', {}),
+            (r'create.*file', 'file_write', {}),
+            (r'write.*file', 'file_write', {}),
+            (r'tulis.*file', 'file_write', {}),
+            
             # File editing patterns (highest priority for edit operations)
             (r'edit.*\.[\w]+', 'file_edit', {}),
             (r'ubah.*\.[\w]+', 'file_edit', {}),
@@ -653,6 +667,8 @@ or use --model flag when starting CLI
                 params.update(self._extract_python_params(user_input))
             elif tool_name == 'file_read':
                 params.update(self._extract_file_read_params(user_input))
+            elif tool_name == 'file_write':
+                params.update(self._extract_file_write_params(user_input))
             elif tool_name == 'file_edit':
                 params.update(self._extract_file_edit_params(user_input))
             
@@ -771,23 +787,50 @@ or use --model flag when starting CLI
     def _extract_file_read_params(self, user_input: str) -> Dict:
         """Extract parameters for file_read tool."""
         import re
+        import os
         params = {}
         
-        # Look for file names with extensions (more comprehensive patterns)
-        file_patterns = [
-            r'([A-Za-z_][A-Za-z0-9_.-]*\.[A-Za-z0-9]+)',  # Standard filenames
-            r'([A-Z_][A-Z0-9_]*\.md)',                     # ALL_CAPS.md files  
-            r'(config\.[A-Za-z]+)',                        # config.* files
-            r'([Rr]eadme\.[A-Za-z]+)',                     # README files
+        # First, try to extract full paths (absolute or relative with folder)
+        # Pattern to match file paths like "/path/to/file.ext", "./folder/file.ext", "folder/file.ext"
+        path_patterns = [
+            r'([~/]?[A-Za-z0-9_./\\-]+/[A-Za-z0-9_.-]+\.[A-Za-z0-9]+)',  # Full paths with folders
+            r'([A-Za-z0-9_.-]+\.[A-Za-z0-9]+)\s+(?:di|in|from)\s+(?:folder\s+)?([~/]?[A-Za-z0-9_./\\-]+)',  # "file.txt di folder /path"
+            r'(?:folder\s+)?([~/]?[A-Za-z0-9_./\\-]+)/([A-Za-z0-9_.-]+\.[A-Za-z0-9]+)',  # "folder /path/file.txt"
         ]
         
-        for pattern in file_patterns:
-            file_match = re.search(pattern, user_input)
-            if file_match:
-                params['path'] = file_match.group(1)
+        for pattern in path_patterns:
+            path_match = re.search(pattern, user_input, re.IGNORECASE)
+            if path_match:
+                if len(path_match.groups()) == 1:
+                    # Full path matched
+                    params['path'] = path_match.group(1)
+                elif len(path_match.groups()) == 2:
+                    # Filename and folder matched separately
+                    filename, folder = path_match.groups()
+                    if 'di folder' in user_input.lower() or 'in folder' in user_input.lower():
+                        # "file.txt di folder /path" format
+                        params['path'] = os.path.join(folder, filename)
+                    else:
+                        # "folder/file.txt" format
+                        params['path'] = os.path.join(path_match.group(1), path_match.group(2))
                 break
         
-        # If no file found, try extracting from common phrases
+        # If no path found, look for standalone filenames
+        if 'path' not in params:
+            file_patterns = [
+                r'([A-Za-z_][A-Za-z0-9_.-]*\.[A-Za-z0-9]+)',  # Standard filenames
+                r'([A-Z_][A-Z0-9_]*\.md)',                     # ALL_CAPS.md files  
+                r'((?:config|readme)\.[A-Za-z]+)',                        # config.* or readme.* files
+                r'([Rr]eadme\.[A-Za-z]+)',                     # README files
+            ]
+            
+            for pattern in file_patterns:
+                file_match = re.search(pattern, user_input)
+                if file_match:
+                    params['path'] = file_match.group(1)
+                    break
+        
+        # If still no file found, try extracting from common phrases
         if 'path' not in params:
             # Extract from "isi dari X" or "content of X"
             content_patterns = [
@@ -831,24 +874,50 @@ or use --model flag when starting CLI
     def _extract_file_edit_params(self, user_input: str) -> Dict:
         """Extract parameters for file_edit tool."""
         import re
+        import os
         params = {}
         
-        # Use similar logic to file_read for extracting file paths
-        # Look for file names with extensions
-        file_patterns = [
-            r'([A-Za-z_][A-Za-z0-9_.-]*\.[A-Za-z0-9]+)',  # Standard filenames
-            r'([A-Z_][A-Z0-9_]*\.md)',                     # ALL_CAPS.md files  
-            r'(config\.[A-Za-z]+)',                        # config.* files
-            r'([Rr]eadme\.[A-Za-z]+)',                     # README files
+        # First, try to extract full paths (absolute or relative with folder)
+        # Pattern to match file paths like "/path/to/file.ext", "./folder/file.ext", "folder/file.ext"
+        path_patterns = [
+            r'([~/]?[A-Za-z0-9_./\\-]+/[A-Za-z0-9_.-]+\.[A-Za-z0-9]+)',  # Full paths with folders
+            r'([A-Za-z0-9_.-]+\.[A-Za-z0-9]+)\s+(?:di|in|from)\s+(?:folder\s+)?([~/]?[A-Za-z0-9_./\\-]+)',  # "file.txt di folder /path"
+            r'(?:folder\s+)?([~/]?[A-Za-z0-9_./\\-]+)/([A-Za-z0-9_.-]+\.[A-Za-z0-9]+)',  # "folder /path/file.txt"
         ]
         
-        for pattern in file_patterns:
-            file_match = re.search(pattern, user_input)
-            if file_match:
-                params['path'] = file_match.group(1)
+        for pattern in path_patterns:
+            path_match = re.search(pattern, user_input, re.IGNORECASE)
+            if path_match:
+                if len(path_match.groups()) == 1:
+                    # Full path matched
+                    params['path'] = path_match.group(1)
+                elif len(path_match.groups()) == 2:
+                    # Filename and folder matched separately
+                    filename, folder = path_match.groups()
+                    if 'di folder' in user_input.lower() or 'in folder' in user_input.lower():
+                        # "file.txt di folder /path" format
+                        params['path'] = os.path.join(folder, filename)
+                    else:
+                        # "folder/file.txt" format
+                        params['path'] = os.path.join(path_match.group(1), path_match.group(2))
                 break
         
-        # If no file found, try extracting from common phrases
+        # If no path found, look for standalone filenames
+        if 'path' not in params:
+            file_patterns = [
+                r'([A-Za-z_][A-Za-z0-9_.-]*\.[A-Za-z0-9]+)',  # Standard filenames
+                r'([A-Z_][A-Z0-9_]*\.md)',                     # ALL_CAPS.md files  
+                r'((?:config|readme)\.[A-Za-z]+)',                        # config.* or readme.* files
+                r'([Rr]eadme\.[A-Za-z]+)',                     # README files
+            ]
+            
+            for pattern in file_patterns:
+                file_match = re.search(pattern, user_input)
+                if file_match:
+                    params['path'] = file_match.group(1)
+                    break
+        
+        # If still no file found, try extracting from common phrases
         if 'path' not in params:
             content_patterns = [
                 r'edit ([A-Za-z0-9_.-]+)',
@@ -865,25 +934,102 @@ or use --model flag when starting CLI
                     filename = match.group(1)
                     # Add common extension if missing
                     if '.' not in filename:
-                        if 'config' in filename.lower():
+                        if any(word in user_input.lower() for word in ['code', 'script', 'program']):
+                            filename += '.py'
+                        elif any(word in user_input.lower() for word in ['doc', 'guide', 'readme']):
+                            filename += '.md'
+                        elif 'config' in filename.lower():
                             filename += '.py'
                         elif 'readme' in filename.lower():
                             filename += '.md'
                         else:
-                            filename += '.py'  # Default
+                            filename += '.py'
                     params['path'] = filename
                     break
         
-        # Check for editor preference
-        if 'nano' in user_input.lower():
-            params['editor'] = 'nano'
-        elif 'vim' in user_input.lower() or 'vi' in user_input.lower():
-            params['editor'] = 'vim'
-        elif 'code' in user_input.lower() or 'vscode' in user_input.lower():
-            params['editor'] = 'code'
+        # Extract editor preference if specified
+        editor_patterns = [
+            r'(?:with|using|in)\s+(nano|vim|vi|code|vscode)',
+            r'(?:pakai|gunakan)\s+(nano|vim|vi|code|vscode)',
+        ]
         
-        # Check if backup is explicitly disabled
-        if any(phrase in user_input.lower() for phrase in ['no backup', 'tanpa backup', 'no save']):
-            params['backup'] = False
+        for pattern in editor_patterns:
+            editor_match = re.search(pattern, user_input, re.IGNORECASE)
+            if editor_match:
+                params['editor'] = editor_match.group(1).lower()
+                if params['editor'] in ['vscode', 'code']:
+                    params['editor'] = 'code'
+                break
+        
+        return params
+
+    def _extract_file_write_params(self, user_input: str) -> Dict:
+        """Extract parameters for file_write tool."""
+        import re
+        import os
+        params = {}
+        
+        # First, try to extract full paths (absolute or relative with folder)
+        path_patterns = [
+            r'([~/]?[A-Za-z0-9_./\\-]+/[A-Za-z0-9_.-]+\.[A-Za-z0-9]+)',  # Full paths with folders
+            r'([A-Za-z0-9_.-]+\.[A-Za-z0-9]+)\s+(?:di|in|to)\s+(?:folder\s+)?([~/]?[A-Za-z0-9_./\\-]+)',  # "file.txt di folder /path"
+            r'(?:folder\s+)?([~/]?[A-Za-z0-9_./\\-]+)/([A-Za-z0-9_.-]+\.[A-Za-z0-9]+)',  # "folder /path/file.txt"
+        ]
+        
+        for pattern in path_patterns:
+            path_match = re.search(pattern, user_input, re.IGNORECASE)
+            if path_match:
+                if len(path_match.groups()) == 1:
+                    # Full path matched
+                    params['path'] = path_match.group(1)
+                elif len(path_match.groups()) == 2:
+                    # Filename and folder matched separately
+                    filename, folder = path_match.groups()
+                    if 'di folder' in user_input.lower() or 'in folder' in user_input.lower() or 'to folder' in user_input.lower():
+                        # "file.txt di folder /path" format
+                        params['path'] = os.path.join(folder, filename)
+                    else:
+                        # "folder/file.txt" format
+                        params['path'] = os.path.join(path_match.group(1), path_match.group(2))
+                break
+        
+        # If no path found, look for standalone filenames
+        if 'path' not in params:
+            file_patterns = [
+                r'(?:buat|create|write|tulis|simpan|save).*?([A-Za-z_][A-Za-z0-9_.-]*\.[A-Za-z0-9]+)',  # "buat file test.py"
+                r'(?:file|berkas)\s+([A-Za-z_][A-Za-z0-9_.-]*\.[A-Za-z0-9]+)',  # "file test.py"
+                r'([A-Za-z_][A-Za-z0-9_.-]*\.[A-Za-z0-9]+)',  # standalone filename
+            ]
+            
+            for pattern in file_patterns:
+                file_match = re.search(pattern, user_input, re.IGNORECASE)
+                if file_match:
+                    params['path'] = file_match.group(1)
+                    break
+        
+        # Extract content if specified
+        content_patterns = [
+            r'(?:isi|content|dengan|with)[\s:]+["\']([^"\']+)["\']',  # "isi 'hello world'"
+            r'(?:isi|content|dengan|with)[\s:]+([^\n]+)',  # "isi hello world"
+            r'tambahkan[\s:]+["\']([^"\']+)["\']',  # "tambahkan 'hello'"
+            r'tambahkan[\s:]+([^\n]+)',  # "tambahkan hello"
+            r'add[\s:]+["\']([^"\']+)["\']',  # "add 'content'"
+            r'add[\s:]+([^\n]+)',  # "add content"
+        ]
+        
+        for pattern in content_patterns:
+            content_match = re.search(pattern, user_input, re.IGNORECASE)
+            if content_match:
+                params['content'] = content_match.group(1).strip()
+                break
+        
+        # If no content specified, set empty content for file creation
+        if 'content' not in params:
+            if any(word in user_input.lower() for word in ['buat', 'create']):
+                params['content'] = ""  # Empty file for creation
+        
+        # Check for backup preference
+        if any(phrase in user_input.lower() for phrase in ['backup', 'cadangan']):
+            params['backup'] = True
         
         return params
