@@ -529,9 +529,9 @@ cerebras-cli config set api.timeout 60
   - [x] Plugin validation and sandboxing
 - [x] Advanced file operations (search, replace, diff)
 - [x] Git integration tools
-- [ ] Advanced shell command detection and execution
-- [ ] Python code execution from natural language
-- [ ] Token usage tracking and analytics
+- [x] Advanced shell command detection and execution
+- [x] Python code execution from natural language
+- [x] Token usage tracking and analytics
 - [ ] Tab completion in REPL
 - [ ] Conversation history persistence
 
