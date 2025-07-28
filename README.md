@@ -522,13 +522,13 @@ cerebras-cli config set api.timeout 60
   - [x] ✅ Smart parameter extraction from natural language
 
 ### Version 1.1 (Next Release)
-- [ ] **Plugin architecture for external tools**
-  - [ ] Dynamic plugin loading from external packages
-  - [ ] Plugin marketplace and discovery system
-  - [ ] Standardized plugin API and SDK
-  - [ ] Plugin validation and sandboxing
-- [ ] Advanced file operations (search, replace, diff)
-- [ ] Git integration tools
+- [x] **Plugin architecture for external tools**
+  - [x] Dynamic plugin loading from external packages
+  - [x] Plugin marketplace and discovery system
+  - [x] Standardized plugin API and SDK
+  - [x] Plugin validation and sandboxing
+- [x] Advanced file operations (search, replace, diff)
+- [x] Git integration tools
 - [ ] Advanced shell command detection and execution
 - [ ] Python code execution from natural language
 - [ ] Token usage tracking and analytics
