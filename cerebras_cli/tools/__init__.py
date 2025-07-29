@@ -9,6 +9,7 @@ from .file_tools import FileReadTool, FileWriteTool, FileListTool
 from .file_edit import FileEditTool
 from .shell_tools import ShellCommandTool, DirectoryTool
 from .code_tools import CodeAnalysisTool, PythonExecuteTool
+from .git_tools import GitTool
 
 __all__ = [
     'Tool',
@@ -23,6 +24,7 @@ __all__ = [
     'DirectoryTool',
     'CodeAnalysisTool',
     'PythonExecuteTool',
+    'GitTool',
 ]
 
 # Default tool registry
@@ -37,3 +39,4 @@ default_registry.register(ShellCommandTool())
 default_registry.register(DirectoryTool())
 default_registry.register(CodeAnalysisTool())
 default_registry.register(PythonExecuteTool())
+default_registry.register(GitTool())

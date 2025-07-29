@@ -20,7 +20,7 @@ A powerful, modern command-line interface for interacting with Cerebras AI model
 - **🤖 Automatic Tool Detection**: AI automatically detects when tools are needed and executes them
 - **📁 File & Directory Operations**: Read, list, and edit files with natural language queries
 - **✏️ Integrated File Editing**: Edit files directly with your preferred editor (nano, vim, VS Code)
-- **Tools System**: Extensible framework with 8 built-in tools across 4 categories
+- **Tools System**: Extensible framework with 9 built-in tools across 4 categories
 - **Smart Parameter Extraction**: Auto-parses paths, patterns, and flags from natural language
 - **Multi-Language Support**: Works with both Indonesian and English queries
 - **Context Management**: Smart file discovery and project understanding
@@ -161,6 +161,7 @@ The CLI includes a comprehensive tools system for various operations:
 | `directory` | Shell | Directory operations (create, remove, etc.) |
 | `code_analyze` | Code | Analyze Python code structure |
 | `python_exec` | Code | Execute Python code in sandbox |
+| `git` | Version Control | Execute git operations and manage version control |
 
 **Examples:**
 ```bash
@@ -178,6 +179,10 @@ The CLI includes a comprehensive tools system for various operations:
 
 # Execute Python code safely
 /tool python_exec code="print('Hello, World!')"
+
+# Git operations
+/tool git action=status
+/tool git action=commit message="Add git tool"
 ```
 
 ### 🤖 Automatic Tool Detection
@@ -213,12 +218,14 @@ The CLI includes a comprehensive tools system for various operations:
 🔧 Auto-detecting: Using file_edit tool...
 [Opens vim editor]
 
-# Supported Patterns:
-- "apa isi dari X" → auto file_read
-- "edit X" → auto file_edit  
-- "berapa file .py" → auto file_list with *.py pattern
-- "list files" → auto file_list
-- "show files recursively" → auto file_list recursive
+# Git Operations (AUTO-DETECTED)
+> show git status
+🔧 Auto-detecting: Using git tool...
+✓ Tool result: Git status shown
+
+> commit changes with message "Add git tool"
+🔧 Auto-detecting: Using git tool...
+✓ Tool result: Changes committed
 ```
 
 **Multi-Language Support:**
@@ -291,7 +298,8 @@ cerebras-cli/
 │   │   ├── base.py        # Base tool classes
 │   │   ├── file_tools.py  # File manipulation tools
 │   │   ├── shell_tools.py # Shell command tools
-│   │   └── code_tools.py  # Code analysis tools
+│   │   ├── code_tools.py  # Code analysis tools
+│   │   └── git_tools.py   # Git operations
 │   └── exceptions.py      # Custom exceptions
 ├── src/                   # Legacy CLI (backward compatibility)
 │   └── main.py            # Original implementation
@@ -347,10 +355,6 @@ class DockerTool(Tool):
     async def execute(self, action: str, image: str = None) -> ToolResult:
         # Implementation here
         pass
-
-# Plugin registration
-def register_plugin():
-    return DockerTool()
 ```
 
 ### Plugin Installation
@@ -513,7 +517,7 @@ cerebras-cli config set api.timeout 60
 
 ### ✅ Version 1.0 (Current)
 - [x] ✅ Modern CLI architecture with Click
-- [x] ✅ Comprehensive tools system (8 tools across 4 categories)
+- [x] ✅ Comprehensive tools system (9 tools across 4 categories)
 - [x] ✅ Rich terminal interface with syntax highlighting
 - [x] ✅ Configuration management (YAML + env variables)
 - [x] ✅ Interactive REPL with slash commands
@@ -532,16 +536,16 @@ cerebras-cli config set api.timeout 60
   - [x] ✅ Smart parameter extraction from natural language
 
 ### Version 1.1 (Next Release)
-- [x] **Plugin architecture for external tools**
-  - [x] Dynamic plugin loading from external packages
-  - [x] Plugin marketplace and discovery system
-  - [x] Standardized plugin API and SDK
-  - [x] Plugin validation and sandboxing
-- [x] Advanced file operations (search, replace, diff)
-- [x] Git integration tools
-- [x] Advanced shell command detection and execution
-- [x] Python code execution from natural language
-- [x] Token usage tracking and analytics
+- [x] ✅ **Plugin architecture for external tools**
+  - [x] ✅ Dynamic plugin loading from external packages
+  - [x] ✅ Plugin marketplace and discovery system
+  - [x] ✅ Standardized plugin API and SDK
+  - [x] ✅ Plugin validation and sandboxing
+- [x] ✅ Advanced file operations (search, replace, diff)
+- [x] ✅ Git integration tools
+- [x] ✅ Advanced shell command detection and execution
+- [x] ✅ Python code execution from natural language
+- [x] ✅ Token usage tracking and analytics
 - [ ] Tab completion in REPL
 - [ ] Conversation history persistence
 
