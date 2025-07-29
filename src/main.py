@@ -51,6 +51,8 @@ def check_new_cli_available() -> bool:
 
 def setup_cerebras_client() -> Cerebras:
     """Setup Cerebras client with error handling."""
+    global cerebras_client
+    
     if not API_KEY:
         print("❌ Error: Missing Cerebras API Key.")
         print("\nPlease set your API key using one of these methods:")
@@ -58,8 +60,11 @@ def setup_cerebras_client() -> Cerebras:
         print("2. Create a .env file with: CEREBRAS_API_KEY=your_key")
         print("3. Set it in config.py")
         sys.exit(1)
+
+    if cerebras_client is None:
+        cerebras_client = Cerebras(api_key=API_KEY)
     
-    return Cerebras(api_key=API_KEY)
+    return cerebras_client
 
 
 def generate_response(

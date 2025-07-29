@@ -9,6 +9,7 @@ from cerebras.cloud.sdk import Cerebras
 
 import src.main as main_module
 from config import MODEL_ID, SYSTEM_MESSAGE, API_KEY, CHAR_DELAY
+from src.main import check_new_cli_available
 
 class TestMainModule(unittest.TestCase):
 
@@ -17,11 +18,21 @@ class TestMainModule(unittest.TestCase):
         main_module.cerebras_client = None
 
     @patch('src.main.Cerebras')
+    @patch('src.main.cerebras_client', None)
     def test_setup_cerebras_client(self, mock_cerebras: MagicMock) -> None:
-        """Test that setup_cerebras_client returns the existing client correctly."""
-        client = main_module.setup_cerebras_client()
-        mock_cerebras.assert_not_called()  # Cerebras constructor should not be called
-        self.assertIs(client, main_module.cerebras_client)
+        """Test that setup_cerebras_client returns the client correctly."""
+        # First call should create the client
+        client1 = main_module.setup_cerebras_client()
+        mock_cerebras.assert_called_once_with(api_key=API_KEY)
+        self.assertIs(client1, main_module.cerebras_client)
+        
+        # Reset mock for second call verification
+        mock_cerebras.reset_mock()
+        
+        # Second call should return the same client
+        client2 = main_module.setup_cerebras_client()
+        self.assertIs(client2, client1)
+        mock_cerebras.assert_not_called()  # Should not create new client
 
 
     @patch('builtins.print')
@@ -58,14 +69,26 @@ class TestMainModule(unittest.TestCase):
 
 
     def test_get_welcoming_text(self):
-        """Test that get_welcoming_text returns the expected text."""
-        expected_text = (
-            f"\nWelcome to {MODEL_ID} Text Generator made by (Awan)\n"
-            f"Happy chat and talk with your {MODEL_ID} AI Generative Model\n"
-            "Addhe Warman Putra - (Awan)\n"
-            "Type 'exit()' to exit from program\n"
-        )
-        self.assertEqual(main_module.get_welcoming_text(), expected_text)
+        """Test that get_welcome_text returns the expected text."""
+        expected_text = """\n🧠 Welcome to Cerebras CLI v1.0.0
+╭─────────────────────────────────────────────────╮
+│ AI-powered command-line interface              │
+│ Model: {MODEL_ID:<38} │
+│ Enhanced CLI: {new_cli_status:<30} │
+╰─────────────────────────────────────────────────╯
+
+💡 Available modes:
+   • Interactive mode (current)
+   • Enhanced CLI (run: python -m cerebras_cli.cli.main)
+   
+🎯 Commands:
+   • Type 'exit()' to quit
+   • Type '/help' for enhanced features (if available)
+   • Type '@filename' to include file content
+   
+👨‍💻 Made by Addhe Warman Putra (Awan)
+""".format(MODEL_ID=MODEL_ID, new_cli_status="✅ Available" if check_new_cli_available() else "❌ Not installed")
+        self.assertEqual(main_module.get_welcome_text(), expected_text)
 
 if __name__ == '__main__':
     unittest.main()
