@@ -6,7 +6,7 @@ import tempfile
 import os
 from unittest.mock import Mock, AsyncMock, patch
 
-from cerebras_cli.cli.repl import CerebrasREPL, get_lexer_for_file
+from cerebras_cli.cli.repl import REPL, get_lexer_for_file
 from cerebras_cli.core.config import Config, APIConfig, CLIConfig
 from cerebras_cli.core.client import CerebrasClient
 
@@ -38,7 +38,7 @@ class TestREPLToolIntegration:
     @pytest.fixture
     def repl(self, mock_client, mock_config):
         """Create a REPL instance."""
-        return CerebrasREPL(mock_client, mock_config)
+        return REPL(mock_client, mock_config)
     
     def test_lexer_detection(self):
         """Test lexer detection for different file types."""
@@ -122,7 +122,7 @@ class TestCLICommands:
     @pytest.fixture
     def repl(self, mock_client, mock_config):
         """Create a REPL instance."""
-        return CerebrasREPL(mock_client, mock_config)
+        return REPL(mock_client, mock_config)
     
     @pytest.mark.asyncio
     async def test_help_command(self, repl):

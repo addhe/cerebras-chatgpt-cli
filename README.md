@@ -436,14 +436,24 @@ pip install -r requirements.txt
 ### Code Quality
 
 ```bash
-# Format code
+# Format code with Black
 black .
 
-# Lint code  
-flake8 .
+# Check formatting
+black --check .
+```
 
-# Type checking
-mypy .
+### Testing
+
+```bash
+# Run all tests
+pytest tests/
+
+# Run specific test
+pytest tests/test_client.py
+
+# Test coverage
+pytest --cov=cerebras_cli tests/
 ```
 
 ## 🔧 Troubleshooting

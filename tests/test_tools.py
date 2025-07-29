@@ -118,6 +118,7 @@ class TestFileTools:
     @pytest.mark.asyncio
     async def test_file_read_tool(self):
         """Test file reading tool."""
+        from pathlib import Path
         tool = FileReadTool()
         
         with tempfile.NamedTemporaryFile(mode='w', delete=False) as f:
@@ -125,10 +126,11 @@ class TestFileTools:
             temp_path = f.name
         
         try:
+            resolved_path = Path(temp_path).resolve()
             result = await tool.execute(path=temp_path)
             assert result.success is True
             assert "Test content\nLine 2" in result.data
-            assert result.metadata['path'] == temp_path
+            assert result.metadata['path'] == str(resolved_path)
         finally:
             os.unlink(temp_path)
     

@@ -4,7 +4,7 @@ This module provides a plugin-like tools system that allows the CLI to perform
 various operations like file manipulation, shell commands, code analysis, etc.
 """
 
-from .base import Tool, ToolRegistry, ToolError
+from .base import Tool, ToolRegistry, ToolError, ToolParameter, ToolResult
 from .file_tools import FileReadTool, FileWriteTool, FileListTool
 from .file_edit import FileEditTool
 from .shell_tools import ShellCommandTool, DirectoryTool
@@ -17,6 +17,7 @@ __all__ = [
     'FileReadTool',
     'FileWriteTool',
     'FileListTool',
+    'ToolResult',
     'FileEditTool',
     'ShellCommandTool',
     'DirectoryTool',
